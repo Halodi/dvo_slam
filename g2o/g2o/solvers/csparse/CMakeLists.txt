@@ -3,9 +3,7 @@ if(NOT G2O_USE_CSPARSE)
 endif()
 
 include_directories(${CSPARSE_INCLUDE_DIR})
-#include_directories("/home/james/workspace/CSparse/Include")
-#set(CSPARSE_LIBRARY "/home/james/workspace/CSparse/Lib/libcsparse.a")
-message("SUTHEOSUTHOESUTHOESU ${CSPARSE_INCLUDE_DIR} ${CSPARSE_LIBRARY}")
+#message("CSPARSE: ${CSPARSE_INCLUDE_DIR} ${CSPARSE_LIBRARY}")
 
 add_library(csparse_extension ${G2O_LGPL_LIB_TYPE}
   csparse_helper.cpp csparse_helper.h

@@ -1,66 +1,61 @@
-# Dense Visual Odometry and SLAM (dvo_slam)
+# About this Fork
+The aim of this fork is to provide a more portable version of dvo-slam which does not require other softwares such as ROS.
 
-*NOTE: this is an alpha release APIs and parameters are going to change in near future. No support is provided at this point.*
+Uses the following packages:
 
-These packages provide an implementation of the rigid body motion estimation of an RGB-D camera from consecutive images.
+- Eigen3
+- PCL (this fork was tested on v1.11)
+- OpenCV
+- VTK
 
- *  **dvo_core**
-    
-    Core implementation of the motion estimation algorithm. 
-    
- *  **dvo_ros**
-    
-    Integration of *dvo_core* with ROS.
-    
- *  **dvo_slam**
-    
-    Pose graph SLAM system based on *dvo_core* and integration with ROS.
-    
- *  **dvo_benchmark**
-    
-    Integration of *dvo_slam* with TUM RGB-D benchmark, see http://vision.in.tum.de/data/datasets/rgbd-dataset.
-    
- *  **sophus**
-    
-    ROS package wrapper for Hauke Strasdat's Sophus library, see https://github.com/strasdat/Sophus.
-    
+# Building
+## Notes on PCL
+Possible due to building from source, I have to manually set some definitions for the PCL package in the CMakeLists.txt for dvo_core (line 39) and dvo_slam (line 26). Please check/adjust for your own installation before attempting to build.
 
-## Installation
+## 1. dvo_core
+1. cd /path/to/dvo\_slam/dvo\_core/build
+2. cmake -DCMAKE\_BUILD\_TYPE=Release ..
+3. make
 
-Checkout the branch for your ROS version into a folder in your `ROS_PACKAGE_PATH` and build the packages with `rosmake`.
+## 2. g2o
+If you already have a g2o installation on your computer, please skip this. Otherwise:
 
- *  ROS Fuerte:
-    
-    ```bash
-    git clone -b fuerte git://github.com/tum-vision/dvo_slam.git
-    rosmake dvo_core dvo_ros dvo_slam dvo_benchmark
-    ```
+1. cd /path/to/dvo\_slam/g2o/build
+2. cmake -DCMAKE\_BUILD\_TYPE=Release ..
+3. make
 
-## Usage
+## 3. dvo_slam
+If building with your pre-existing g2o installation, please replace lines 49-51 and 78-82 of the CMakeLists.txt with your own configuration.
 
-Estimating the camera trajectory from an RGB-D image stream:
+1. cd /path/to/dvo\_slam/dvo\_slam/build
+2. cmake -DCMAKE\_BUILD\_TYPE=Release ..
+3. make
 
-*TODO*
+# Usage
+##Include directories
 
-For visualization:
+- /path/to/dvo\_slam/dvo\_core/include
+- /path/to/dvo\_slam/dvo\_slam/include
 
- *  Start RVIZ
- *  Set the *Target Frame* to `/world`
- *  Add an *Interactive Marker* display and set its *Update Topic* to `/dvo_vis/update`
- *  Add a *PointCloud2* display and set its *Topic* to `/dvo_vis/cloud`
+If using the provided g2o:
 
-The red camera shows the current camera position. The blue camera displays the initial camera position.
+- /path/to/dvo\_slam/g2o/include
+- /path/to/dvo\_slam/g2o/build
 
-## Publications
+## Libraries
+Please be mindful of the order: both g2o and dvo\_core must be linked before g2o\_slam.
 
-The following publications describe the approach:
+- /path/to/dvo\_slam/dvo\_slam/build/libdvo\_slam.a
+- /path/to/dvo\_slam/dvo\_core/build/libdvo\_core.a
 
- *   **Dense Visual SLAM for RGB-D Cameras** (C. Kerl, J. Sturm, D. Cremers), In Proc. of the Int. Conf. on Intelligent Robot Systems (IROS), 2013.
- *   **Robust Odometry Estimation for RGB-D Cameras** (C. Kerl, J. Sturm, D. Cremers), In Proc. of the IEEE Int. Conf. on Robotics and Automation (ICRA), 2013
- *   **Real-Time Visual Odometry from Dense RGB-D Images** (F. Steinbruecker, J. Sturm, D. Cremers), In Workshop on Live Dense Reconstruction with Moving Cameras at the Intl. Conf. on Computer Vision (ICCV), 2011.
+If using the provided g2o:
 
-## License
+- /path/to/dvo\_slam/g2o/lib/*.so
 
-The packages *dvo_core*, *dvo_ros*, *dvo_slam*, and *dvo_benchmark* are licensed under the GNU General Public License Version 3 (GPLv3), see http://www.gnu.org/licenses/gpl.html.
+Otherwise (from the original dvo\_slam/dvo\_slam/CMakeLists.txt):
 
-The package *sophus* is licensed under the MIT License, see http://opensource.org/licenses/MIT.
+- #${G2O\_CORE\_LIBRARY}
+- #${G2O\_SOLVER\_DENSE}
+- #${G2O\_SOLVER\_EIGEN}
+- #${G2O\_TYPES\_SLAM3D}
+
