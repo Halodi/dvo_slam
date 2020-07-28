@@ -1,6 +1,8 @@
 # About this Fork
 The aim of this fork is to provide a more portable version of dvo-slam which does not require other softwares such as ROS.
 
+c++17 recommended, for [alignment of Eigen structs](https://eigen.tuxfamily.org/dox/group__TopicUnalignedArrayAssert.html)
+
 Uses the following packages:
 
 - Eigen3
