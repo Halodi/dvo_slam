@@ -26,7 +26,7 @@
 
 #include <dvo_slam/tracking_result_evaluation.h>
 
-#include <ros/time.h>
+#include <chrono>
 #include <Eigen/Geometry>
 #include <vector>
 
@@ -36,6 +36,7 @@ namespace dvo_slam
 class Keyframe
 {
 public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   Keyframe() : id_(-1) {};
   virtual ~Keyframe() {};
@@ -45,9 +46,9 @@ public:
   FI_ATTRIBUTE(Keyframe, Eigen::Affine3d, pose)
   FI_ATTRIBUTE(Keyframe, dvo_slam::TrackingResultEvaluation::ConstPtr, evaluation)
 
-  ros::Time timestamp() const
+  std::chrono::nanoseconds timestamp() const
   {
-    return ros::Time(image()->timestamp());
+    return std::chrono::nanoseconds((long)(image()->timestamp() * 1e9));
   }
 };
 

@@ -18,50 +18,37 @@
  *  along with dvo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TIMESTAMPED_H_
-#define TIMESTAMPED_H_
+#ifndef GRAPH_VISUALIZER_H_
+#define GRAPH_VISUALIZER_H_
 
-#include <chrono>
-#include <g2o/core/optimizable_graph.h>
+//#include <dvo_ros/visualization/ros_camera_trajectory_visualizer.h>
+#include <dvo_slam/keyframe_graph.h>
+#include <boost/scoped_ptr.hpp>
 
 namespace dvo_slam
 {
+namespace visualization
+{
 
-class Timestamped : public g2o::OptimizableGraph::Data
+namespace internal
+{
+  class GraphVisualizerImpl;
+} /* namespace internal */
+
+class GraphVisualizer
 {
 public:
-  Timestamped()
-  {
-  }
+  //GraphVisualizer(dvo_ros::visualization::RosCameraTrajectoryVisualizer& visualizer);
+  GraphVisualizer();
+  virtual ~GraphVisualizer();
 
-  Timestamped(const std::chrono::nanoseconds& new_timestamp) :
-    timestamp(new_timestamp)
-  {
-    //assert(!timestamp.isZero());
-    assert(timestamp.count() > 0);
-  }
+  void setGraph(dvo_slam::KeyframeGraph *graph);
 
-  //! read the data from a stream
-  virtual bool read(std::istream& is)
-  {
-    double sec;
-    is >> sec;
-    //timestamp.fromSec(sec);
-    timestamp = std::chrono::nanoseconds((long)(sec * 1e9));
-
-    return true;
-  }
-
-  //! write the data to a stream
-  virtual bool write(std::ostream& os) const
-  {
-    os << timestamp.count() / 1e9;
-    return true;
-  }
-
-  std::chrono::nanoseconds timestamp;
+  void update();
+private:
+  boost::scoped_ptr<internal::GraphVisualizerImpl> impl_;
 };
 
+} /* namespace visualization */
 } /* namespace dvo_slam */
-
-#endif /* TIMESTAMPED_H_ */
+#endif /* GRAPH_VISUALIZER_H_ */

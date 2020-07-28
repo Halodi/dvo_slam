@@ -28,7 +28,7 @@
 #include <tbb/parallel_invoke.h>
 #include <tbb/tbb_thread.h>
 
-#include <ros/console.h>
+//#include <ros/console.h>
 
 namespace dvo_slam
 {
@@ -40,6 +40,7 @@ typedef boost::shared_ptr<dvo::DenseTracker> DenseTrackerPtr;
 
 struct LocalTrackerImpl
 {
+EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   friend class LocalTracker;
 
   DenseTrackerPtr keyframe_tracker_, odometry_tracker_;
@@ -143,7 +144,7 @@ void LocalTracker::initNewLocalMap(const dvo::core::RgbdImagePyramid::Ptr& keyfr
   // TODO: should be side effect free, i.e., not changing r_odometry
   if(r_odometry.isNaN())
   {
-    ROS_ERROR("NaN in Map Initialization!");
+    std::cout << "Error: NaN in Map Initialization!" << std::endl;;
     r_odometry.setIdentity();
   }
 
@@ -184,8 +185,10 @@ void LocalTracker::update(const dvo::core::RgbdImagePyramid::Ptr& image, dvo::co
   tbb::parallel_invoke(h1, h2);
   sw_match.stopAndPrint();
 
-  ROS_WARN_COND(r_odometry.isNaN(), "NAN in Odometry");
-  ROS_WARN_COND(r_keyframe.isNaN(), "NAN in Keyframe");
+  /*ROS_WARN_COND(r_odometry.isNaN(), "NAN in Odometry");
+  ROS_WARN_COND(r_keyframe.isNaN(), "NAN in Keyframe");*/
+  if(r_odometry.isNaN()) std::cout << "Warning: NAN in Odometry" << std::endl;
+  if(r_keyframe.isNaN()) std::cout << "Warning: NAN in Keyframe" << std::endl;
 
   impl_->force_ = impl_->force_ || r_odometry.isNaN() || r_keyframe.isNaN();
 

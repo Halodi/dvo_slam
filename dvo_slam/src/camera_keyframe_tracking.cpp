@@ -182,11 +182,13 @@ void CameraKeyframeTracker::handleSlamConfig(dvo_slam::KeyframeSlamConfig& confi
 
 void CameraKeyframeTracker::onMapChanged(dvo_slam::KeyframeGraph& map)
 {
+
   dvo_slam::PoseStampedArray msg;
   dvo_slam::serialization::MessageSerializer serializer(msg);
   serializer.serialize(map);
 
   graph_publisher.publish(msg);
+
 }
 
 void CameraKeyframeTracker::handleImages(
@@ -298,7 +300,7 @@ void CameraKeyframeTracker::publishTransform(const std_msgs::Header& header, con
   tf_transform.child_frame_id_ = frame;
   tf_transform.stamp_ = header.stamp;
 
-  tf::TransformEigenToTF(transform, tf_transform);
+  tf::transformEigenToTF(transform, tf_transform);
 
   tb.sendTransform(tf_transform);
 

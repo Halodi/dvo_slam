@@ -33,6 +33,8 @@ namespace constraints
 
 struct ConstraintProposal
 {
+EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
   struct Vote
   {
     enum Enum

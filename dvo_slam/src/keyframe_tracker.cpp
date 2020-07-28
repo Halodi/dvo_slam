@@ -22,14 +22,11 @@
 #include <Eigen/Geometry>
 #include <Eigen/Eigenvalues>
 
-#include <ros/ros.h>
-#include <std_msgs/Float64.h>
-
 #include <dvo_slam/keyframe_tracker.h>
 #include <dvo_slam/keyframe_graph.h>
 #include <dvo_slam/local_tracker.h>
 #include <dvo_slam/tracking_result_evaluation.h>
-#include <dvo_slam/serialization/map_serializer.h>
+//#include <dvo_slam/serialization/map_serializer.h>
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
@@ -41,23 +38,24 @@ namespace dvo_slam
 
 class KeyframeTracker::Impl
 {
-  ros::NodeHandle nh_;
-  ros::Publisher ll_keyframe_pub_, ll_odometry_pub_, cn_odometry_pub_, cn_keyframe_pub_, de_odometry_pub_, de_keyframe_pub_, md_pub_;
+  //ros::NodeHandle nh_;
+  //ros::Publisher ll_keyframe_pub_, ll_odometry_pub_, cn_odometry_pub_, cn_keyframe_pub_, de_odometry_pub_, de_keyframe_pub_, md_pub_;
 
-  dvo_slam::visualization::GraphVisualizer* visualizer_;
+  //dvo_slam::visualization::GraphVisualizer* visualizer_;
 public:
+EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   friend class ::dvo_slam::KeyframeTracker;
 
-  Impl(dvo_slam::visualization::GraphVisualizer* visualizer) :
-    visualizer_(visualizer),
+  Impl(void* visualizer) :
+    //visualizer_(visualizer),
     graph_(),
     lt_()
   {
-    if(visualizer_ != 0)
+    /*if(visualizer_ != 0)
     {
       visualizer_->setGraph(&graph_);
       graph_.addMapChangedCallback(boost::bind(&KeyframeTracker::Impl::onGlobalMapChangedUpdateVisualization, this, _1));
-    }
+    }*/
 
     //graph_.addMapChangedCallback(boost::bind(&KeyframeTracker::Impl::onGlobalMapChangedSaveTrajectory, this, _1));
 
@@ -70,13 +68,13 @@ public:
     lt_.addAcceptCallback(boost::bind(&KeyframeTracker::Impl::onAcceptCriterionConstraintRatio, this, _1, _2, _3));
     lt_.addAcceptCallback(boost::bind(&KeyframeTracker::Impl::onAcceptCriterionConditionNumber, this, _1, _2, _3));
 
-    ll_keyframe_pub_ = nh_.advertise<std_msgs::Float64>("/ll/keyframe", 1);
+    /*ll_keyframe_pub_ = nh_.advertise<std_msgs::Float64>("/ll/keyframe", 1);
     ll_odometry_pub_ = nh_.advertise<std_msgs::Float64>("/ll/odometry", 1);
     cn_keyframe_pub_ = nh_.advertise<std_msgs::Float64>("/cn/keyframe", 1);
     cn_odometry_pub_ = nh_.advertise<std_msgs::Float64>("/cn/odometry", 1);
     de_keyframe_pub_ = nh_.advertise<std_msgs::Float64>("/de/keyframe", 1);
     de_odometry_pub_ = nh_.advertise<std_msgs::Float64>("/de/odometry", 1);
-    md_pub_ = nh_.advertise<std_msgs::Float64>("/md", 1);
+    md_pub_ = nh_.advertise<std_msgs::Float64>("/md", 1);*/
   }
 
 
@@ -104,18 +102,20 @@ public:
 
   bool onAcceptCriterionTrackingResultEvaluation(const LocalTracker& lt, const LocalTracker::TrackingResult& r_odometry, const LocalTracker::TrackingResult& r_keyframe)
   {
-    std_msgs::Float64 m1, m2, m3;
+    /*std_msgs::Float64 m1, m2, m3;
     m1.data = -r_odometry.LogLikelihood;
     m2.data = -r_keyframe.LogLikelihood;
     m3.data = evaluation->ratioWithFirst(r_keyframe);
 
-    bool accept = m3.data > cfg_.MinEntropyRatio;
+    bool accept = m3.data > cfg_.MinEntropyRatio;*/
+    
+    bool accept = evaluation->ratioWithFirst(r_keyframe) > cfg_.MinEntropyRatio;
 
     if(accept)
       evaluation->add(r_keyframe);
 
-    ll_odometry_pub_.publish(m1);
-    ll_keyframe_pub_.publish(m3);
+    /*ll_odometry_pub_.publish(m1);
+    ll_keyframe_pub_.publish(m3);*/
 
     return accept;
   }
@@ -126,7 +126,7 @@ public:
 
     //dvo::core::AffineTransformd diff = last_transform_to_keyframe_.inverse() * r_keyframe.Pose;
 
-    std_msgs::Float64 md;
+    //std_msgs::Float64 md;
     //md.data = diff.translation().norm();
     //md_pub_.publish(md);
 
@@ -169,7 +169,7 @@ public:
 
   bool onAcceptCriterionConditionNumber(const LocalTracker& lt, const LocalTracker::TrackingResult& r_odometry, const LocalTracker::TrackingResult& r_keyframe)
   {
-    std_msgs::Float64 kappa_odometry, kappa_keyframe, de_odometry, de_keyframe;
+    /*std_msgs::Float64 kappa_odometry, kappa_keyframe, de_odometry, de_keyframe;
 
     Eigen::SelfAdjointEigenSolver<dvo::core::Matrix6d> eigensolver1(r_odometry.Information);
     dvo::core::Vector6d eigenvalues = eigensolver1.eigenvalues().real();
@@ -186,7 +186,7 @@ public:
     //de_keyframe.data = r_keyframe.Context->Mean.sum();
 
     cn_odometry_pub_.publish(kappa_odometry);
-    cn_keyframe_pub_.publish(kappa_keyframe);
+    cn_keyframe_pub_.publish(kappa_keyframe);*/
 
     //de_odometry_pub_.publish(de_odometry);
     //de_keyframe_pub_.publish(de_keyframe);
@@ -196,7 +196,7 @@ public:
 
   void onGlobalMapChangedUpdateVisualization(KeyframeGraph& map)
   {
-    visualizer_->update();
+    //visualizer_->update();
   }
 
 
@@ -207,8 +207,8 @@ public:
     std::stringstream ss;
     ss << "assoc_opt_traj" << idx << ".txt";
 
-    dvo_slam::serialization::FileSerializer<dvo_slam::serialization::TrajectorySerializer> serializer(ss.str());
-    serializer.serialize(map);
+    /*dvo_slam::serialization::FileSerializer<dvo_slam::serialization::TrajectorySerializer> serializer(ss.str());
+    serializer.serialize(map);*/
 
     ++idx;
   }
@@ -224,9 +224,9 @@ public:
     relative_transformation_.setIdentity();
   }
 
-  void update(const dvo::core::RgbdImagePyramid::Ptr& current, const ros::Time& current_time, Eigen::Affine3d& absolute_transformation)
+  void update(const dvo::core::RgbdImagePyramid::Ptr& current, const std::chrono::nanoseconds& current_time, Eigen::Affine3d& absolute_transformation)
   {
-    current->level(0).timestamp = current_time.toSec();
+    current->level(0).timestamp = current_time.count() / 1e9;
 
     if(!previous_)
     {
@@ -259,7 +259,7 @@ private:
   KeyframeTrackerConfig cfg_;
 };
 
-KeyframeTracker::KeyframeTracker(dvo_slam::visualization::GraphVisualizer* visualizer) :
+KeyframeTracker::KeyframeTracker(void* visualizer) :
   impl_(new KeyframeTracker::Impl(visualizer))
 {
 }
@@ -305,7 +305,7 @@ void KeyframeTracker::init(const Eigen::Affine3d& initial_transformation)
   impl_->init(initial_transformation);
 }
 
-void KeyframeTracker::update(const dvo::core::RgbdImagePyramid::Ptr& current, const ros::Time& current_time, Eigen::Affine3d& absolute_transformation)
+void KeyframeTracker::update(const dvo::core::RgbdImagePyramid::Ptr& current, const std::chrono::nanoseconds& current_time, Eigen::Affine3d& absolute_transformation)
 {
   impl_->update(current, current_time, absolute_transformation);
 }
@@ -325,9 +325,9 @@ void KeyframeTracker::addMapChangedCallback(const dvo_slam::KeyframeGraph::MapCh
   impl_->graph_.addMapChangedCallback(callback);
 }
 
-void KeyframeTracker::serializeMap(dvo_slam::serialization::MapSerializerInterface& serializer)
+/*void KeyframeTracker::serializeMap(dvo_slam::serialization::MapSerializerInterface& serializer)
 {
   serializer.serialize(impl_->graph_);
-}
+}*/
 
 } /* namespace dvo_slam */

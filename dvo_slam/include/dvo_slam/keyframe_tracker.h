@@ -25,10 +25,11 @@
 #include <dvo/dense_tracking.h>
 
 #include <dvo_slam/config.h>
-#include <dvo_slam/serialization/map_serializer_interface.h>
-#include <dvo_slam/visualization/graph_visualizer.h>
+#include <dvo_slam/keyframe_graph.h>
+//#include <dvo_slam/serialization/map_serializer_interface.h>
+//#include <dvo_slam/visualization/graph_visualizer.h>
 
-#include <ros/time.h>
+#include <chrono>
 
 namespace dvo_slam
 {
@@ -36,7 +37,7 @@ namespace dvo_slam
 class KeyframeTracker
 {
 public:
-  KeyframeTracker(dvo_slam::visualization::GraphVisualizer* visualizer = 0);
+  KeyframeTracker(void* visualizer = 0);
 
   const dvo::DenseTracker::Config& trackingConfiguration() const;
   const dvo_slam::KeyframeTrackerConfig& keyframeSelectionConfiguration() const;
@@ -51,7 +52,7 @@ public:
   void init();
   void init(const Eigen::Affine3d& initial_transformation);
 
-  void update(const dvo::core::RgbdImagePyramid::Ptr& current, const ros::Time& current_time, Eigen::Affine3d& absolute_transformation);
+  void update(const dvo::core::RgbdImagePyramid::Ptr& current, const std::chrono::nanoseconds& current_time, Eigen::Affine3d& absolute_transformation);
 
   void forceKeyframe();
 
@@ -59,7 +60,7 @@ public:
 
   void addMapChangedCallback(const dvo_slam::KeyframeGraph::MapChangedCallback& callback);
 
-  void serializeMap(dvo_slam::serialization::MapSerializerInterface& serializer);
+  //void serializeMap(dvo_slam::serialization::MapSerializerInterface& serializer);
 private:
   class Impl;
   boost::shared_ptr<Impl> impl_;

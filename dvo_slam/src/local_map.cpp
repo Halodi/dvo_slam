@@ -25,8 +25,7 @@
 #include <g2o/core/solver.h>
 #include <g2o/core/block_solver.h>
 #include <g2o/core/optimization_algorithm_levenberg.h>
-#include <g2o/solvers/dense/linear_solver_dense.h>
-#include <g2o/solvers/csparse/linear_solver_csparse.h>
+#include <g2o/solvers/eigen/linear_solver_eigen.h>
 
 #include <g2o/types/slam3d/vertex_se3.h>
 #include <g2o/types/slam3d/edge_se3.h>
@@ -57,7 +56,7 @@ static Eigen::Affine3d toAffine(const Eigen::Isometry3d& pose)
 struct LocalMapImpl
 {
   typedef g2o::BlockSolver_6_3 BlockSolver;
-  typedef g2o::LinearSolverCSparse<BlockSolver::PoseMatrixType> LinearSolver;
+  typedef g2o::LinearSolverEigen<BlockSolver::PoseMatrixType> LinearSolver;
   dvo::core::RgbdImagePyramid::Ptr keyframe_, current_;
   g2o::VertexSE3 *keyframe_vertex_, *previous_vertex_, *current_vertex_;
 
@@ -77,25 +76,25 @@ struct LocalMapImpl
     // g2o setup
     graph_.setAlgorithm(
         new g2o::OptimizationAlgorithmLevenberg(
-            new BlockSolver(
-                new LinearSolver()
-            )
-        )
-    );
+            std::unique_ptr<BlockSolver>(new BlockSolver(
+                std::unique_ptr<LinearSolver>(new LinearSolver())))));
     graph_.setVerbose(false);
 
-    keyframe_vertex_ = addFrameVertex(ros::Time(keyframe->timestamp()));
+    keyframe_vertex_ = addFrameVertex(std::chrono::nanoseconds((long)(keyframe->timestamp() * 1e9)));
     keyframe_vertex_->setFixed(true);
     keyframe_vertex_->setEstimate(toIsometry(keyframe_pose));
   }
 
-  g2o::VertexSE3* addFrameVertex(const ros::Time& timestamp)
+  g2o::VertexSE3* addFrameVertex(const std::chrono::nanoseconds& timestamp)
   {
     g2o::VertexSE3* frame_vertex = new g2o::VertexSE3();
     frame_vertex->setId(max_vertex_id_++);
     frame_vertex->setUserData(new Timestamped(timestamp));
 
-    graph_.addVertex(frame_vertex);
+    if(!graph_.addVertex(frame_vertex))
+    {
+      throw std::runtime_error("failed to add vertex to g2o graph!");
+    }
 
     return frame_vertex;
   }
@@ -191,7 +190,7 @@ void LocalMap::addFrame(const dvo::core::RgbdImagePyramid::Ptr& frame)
 {
   impl_->current_ = frame;
   impl_->previous_vertex_ = impl_->current_vertex_;
-  impl_->current_vertex_ = impl_->addFrameVertex(ros::Time(frame->timestamp()));
+  impl_->current_vertex_ = impl_->addFrameVertex(std::chrono::nanoseconds((long)(frame->timestamp() * 1e9)));
 }
 
 void LocalMap::addOdometryMeasurement(const dvo::core::AffineTransformd& pose, const dvo::core::Matrix6d& information)

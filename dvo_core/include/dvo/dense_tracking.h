@@ -125,7 +125,6 @@ public:
   struct Result
   {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-
     dvo::core::AffineTransformd Transformation;
     dvo::core::Matrix6d Information;
     double LogLikelihood;
