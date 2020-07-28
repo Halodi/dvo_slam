@@ -32,7 +32,8 @@ If building with your pre-existing g2o installation, please replace lines 49-51 
 3. make
 
 # Usage
-##Include directories
+
+## Include directories
 
 - /path/to/dvo\_slam/dvo\_core/include
 - /path/to/dvo\_slam/dvo\_slam/include
