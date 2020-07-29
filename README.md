@@ -50,6 +50,7 @@ Please be mindful of the order: both g2o and dvo\_core must be linked before g2o
 
 - /path/to/dvo\_slam/dvo\_slam/build/libdvo\_slam.a
 - /path/to/dvo\_slam/dvo\_core/build/libdvo\_core.a
+- tbb
 
 If using the provided g2o:
 
