@@ -348,8 +348,9 @@ std::vector<PoseStamped> KeyframeTracker::get_graph_vertices()
 
     PoseStamped pose_;
     pose_.timestamp = t->timestamp;
-    pose_.position = Eigen::Translation3d(p.translation());
-    pose_.orientation = Eigen::Quaterniond(p.rotation());
+    pose_.pose.setIdentity();
+    pose_.pose.matrix().block<3,1>(0,3) = p.translation();
+    pose_.pose.matrix().block<3,3>(0,0) = Eigen::Quaterniond(p.rotation()).toRotationMatrix();
     poses_.push_back(pose_);
   }
 

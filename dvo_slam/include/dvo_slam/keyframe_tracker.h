@@ -38,8 +38,7 @@ struct PoseStamped
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   std::chrono::nanoseconds timestamp;
-  Eigen::Translation3d position;
-  Eigen::Quaterniond orientation;
+  Eigen::Affine3d pose;
 };
 
 class KeyframeTracker
