@@ -27,6 +27,8 @@
 #include <dvo_slam/local_tracker.h>
 #include <dvo_slam/tracking_result_evaluation.h>
 //#include <dvo_slam/serialization/map_serializer.h>
+#include <g2o/types/slam3d/vertex_se3.h>
+#include <dvo_slam/timestamped.h>
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
@@ -329,5 +331,29 @@ void KeyframeTracker::addMapChangedCallback(const dvo_slam::KeyframeGraph::MapCh
 {
   serializer.serialize(impl_->graph_);
 }*/
+
+std::vector<PoseStamped> KeyframeTracker::get_graph_vertices()
+{
+  std::vector<PoseStamped> poses_;
+
+  auto vertices_ = impl_->graph_.graph().vertices();
+  for(auto it = vertices_.begin(); it != vertices_.end(); ++it)
+  {
+    g2o::VertexSE3 *v = (g2o::VertexSE3 *) it->second;
+    Timestamped *t = dynamic_cast<Timestamped *>(v->userData());
+
+    assert(t != 0);
+
+    Eigen::Isometry3d p = v->estimate();
+
+    PoseStamped pose_;
+    pose_.timestamp = t->timestamp;
+    pose_.position = Eigen::Translation3d(p.translation());
+    pose_.orientation = Eigen::Quaterniond(p.rotation());
+    poses_.push_back(pose_);
+  }
+
+  return poses_;
+}
 
 } /* namespace dvo_slam */

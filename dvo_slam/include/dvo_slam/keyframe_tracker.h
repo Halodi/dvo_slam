@@ -34,6 +34,14 @@
 namespace dvo_slam
 {
 
+struct PoseStamped
+{
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  std::chrono::nanoseconds timestamp;
+  Eigen::Translation3d position;
+  Eigen::Quaterniond orientation;
+};
+
 class KeyframeTracker
 {
 public:
@@ -61,6 +69,7 @@ public:
   void addMapChangedCallback(const dvo_slam::KeyframeGraph::MapChangedCallback& callback);
 
   //void serializeMap(dvo_slam::serialization::MapSerializerInterface& serializer);
+  std::vector<PoseStamped> get_graph_vertices();
 private:
   class Impl;
   boost::shared_ptr<Impl> impl_;
